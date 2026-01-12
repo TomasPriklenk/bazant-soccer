@@ -2,6 +2,9 @@
 
 import { supabase } from "./lib/supabase";
 
+export const dynamic = "force-dynamic";   // 👈 TOTO JE KLÍČ
+export const fetchCache = "force-no-store";
+
 export default function Home() {
   const signIn = async () => {
     await supabase.auth.signInWithOAuth({
@@ -15,7 +18,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-black text-white">
       <div className="flex flex-col items-center gap-6">
-        <h1 className="text-4xl font-bold">Bazanťák ⚽</h1>
+        <h1 className="text-4xl font-bold">Bažant</h1>
         <p>Přihlas se Google účtem a hraj</p>
         <button
           onClick={signIn}
