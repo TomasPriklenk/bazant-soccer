@@ -25,7 +25,7 @@ export default async function ObchodPage() {
             }}
           >
             <img
-              src={`https://cxmzsao...supabase.co/storage/v1/object/public/cards/${card.image_path}`}
+              src={`https://cxmzsoahioyqsvptpy.supabase.co/storage/v1/object/public/cards/${card.image_path}`}
               style={{ width: "100%", borderRadius: 10 }}
             />
 
