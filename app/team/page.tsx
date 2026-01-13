@@ -1,90 +1,99 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
+
+type Card = {
+  id: string;
+  overall: number;
+  image_url: string;
+  is_goalkeeper: boolean;
+};
 
 type Team = {
   gk_card_id: string | null;
-  gk_overall: number | null;
-
-  p1_card_id: string | null;
-  p1_overall: number | null;
-
-  p2_card_id: string | null;
-  p2_overall: number | null;
-
-  p3_card_id: string | null;
-  p3_overall: number | null;
-
-  p4_card_id: string | null;
-  p4_overall: number | null;
-
-  p5_card_id: string | null;
-  p5_overall: number | null;
-
-  base_rating: number;
-  team_rating: number;
+  p1: string | null;
+  p2: string | null;
+  p3: string | null;
+  p4: string | null;
+  p5: string | null;
 };
 
 export default function TeamPage() {
   const [team, setTeam] = useState<Team | null>(null);
+  const [cards, setCards] = useState<Record<string, Card>>({});
 
   useEffect(() => {
-    loadTeam();
+    load();
   }, []);
 
-  async function loadTeam() {
-    const { data, error } = await supabase
-      .from("user_team_menu")
-      .select("*")
+  async function load() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data: teamData } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('user_id', user!.id)
       .single();
 
-    if (error) {
-      console.error(error);
-      return;
-    }
+    const ids = [
+      teamData.gk_card_id,
+      teamData.p1,
+      teamData.p2,
+      teamData.p3,
+      teamData.p4,
+      teamData.p5,
+    ].filter(Boolean);
 
-    setTeam(data);
+    const { data: cardsData } = await supabase
+      .from('cards')
+      .select('id, overall, image_url, is_goalkeeper')
+      .in('id', ids);
+
+    const map: any = {};
+    cardsData?.forEach((c) => (map[c.id] = c));
+
+    setTeam(teamData);
+    setCards(map);
   }
 
-  if (!team) return <div>Loading…</div>;
+  function renderSlot(cardId: string | null) {
+    if (!cardId) {
+      return <div className="slot empty">+</div>;
+    }
+
+    const c = cards[cardId];
+    if (!c) return null;
+
+    return (
+      <div className="slot">
+        <img src={c.image_url} />
+        <div className="rating">{c.overall}</div>
+      </div>
+    );
+  }
+
+  if (!team) return null;
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1>Tvůj tým</h1>
-      <h2>Rating: {team.team_rating}</h2>
+    <div className="pitch">
+      <div className="row top">
+        {renderSlot(team.p3)}
+        {renderSlot(team.p4)}
+        {renderSlot(team.p5)}
+      </div>
 
-      <div className="pitch">
-        <div className="row top">
-          <Slot label="P3" overall={team.p3_overall} />
-          <Slot label="P4" overall={team.p4_overall} />
-          <Slot label="P5" overall={team.p5_overall} />
-        </div>
+      <div className="row bottom">
+        {renderSlot(team.p1)}
+        {renderSlot(team.p2)}
+      </div>
 
-        <div className="row mid">
-          <Slot label="P1" overall={team.p1_overall} />
-          <Slot label="P2" overall={team.p2_overall} />
-        </div>
-
-        <div className="row bottom">
-          <Slot label="GK" overall={team.gk_overall} />
-        </div>
+      <div className="row gk">
+        {renderSlot(team.gk_card_id)}
       </div>
     </div>
   );
 }
 
-function Slot({ label, overall }: { label: string; overall: number | null }) {
-  return (
-    <div className="slot">
-      {overall ? (
-        <div className="card">
-          <strong>{label}</strong>
-          <div>{overall}</div>
-        </div>
-      ) : (
-        <div className="empty">{label}</div>
-      )}
-    </div>
-  );
-}
