@@ -10,9 +10,10 @@ export default function Home() {
   await supabase.auth.signInWithOAuth({
   provider: "google",
   options: {
-    redirectTo: `${window.location.origin}/auth/callback`,
-  },
+    redirectTo: "https://bazant-soccer-vercel.vercel.app/auth/callback"
+  }
 });
+
 
 
   };
