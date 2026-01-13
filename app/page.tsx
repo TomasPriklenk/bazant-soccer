@@ -11,7 +11,6 @@ export default function Home() {
   provider: "google",
   options: {
     redirectTo: `${window.location.origin}/auth/callback`,
-    flowType: "pkce"
   },
 });
 
