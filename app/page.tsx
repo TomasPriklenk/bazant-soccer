@@ -1,6 +1,7 @@
 "use client";
 
-import { supabase } from "./lib/supabase";
+import { supabase } from '../lib/supabase';
+
 
 export const dynamic = "force-dynamic";   // 👈 TOTO JE KLÍČ
 export const fetchCache = "force-no-store";
