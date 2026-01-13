@@ -39,9 +39,13 @@ export default function TeamPage() {
       .eq("user_id", user.id)
       .single();
 
+    if (!teamData) return;
     setTeam(teamData);
 
-    const ids = Object.values(teamData).filter(Boolean);
+    const ids = teamData
+      ? (Object.values(teamData).filter(Boolean) as string[])
+      : [];
+
 
     const { data: cardData } = await supabase
       .from("cards")
