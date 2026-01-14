@@ -1,24 +1,24 @@
-export default function TeamPage() {
-  return (
-    <div style={{ color: "white", fontSize: 32, padding: 40 }}>
-      TEAM PAGE RENDER TEST
-    </div>
-  );
-}
-
-
-
-
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 
-type Card = {
-  id: string;
-  overall: number;
-  image_url: string;
-};
+/**
+ * Slot = jedno místo na hřišti
+ * Zatím jen zobrazí cardId nebo label
+ */
+function Slot({
+  label,
+  cardId,
+}: {
+  label: string;
+  cardId?: string | null;
+}) {
+  return (
+    <div className="slot">
+      {cardId ?? label}
+    </div>
+  );
+}
 
 type Team = {
   gk_card_id: string | null;
@@ -30,89 +30,41 @@ type Team = {
 };
 
 export default function TeamPage() {
-  const [cards, setCards] = useState<Record<string, Card>>({});
-  const [team, setTeam] = useState<Team | null>(null);
+  // 🔹 zatím mock dat (později nahradíme Supabase)
+  const [team, setTeam] = useState<Team>({
+    gk_card_id: null,
+    p1: null,
+    p2: null,
+    p3: null,
+    p4: null,
+    p5: null,
+  });
 
   useEffect(() => {
-    load();
+    // jen test, že stránka renderuje
+    console.log("TEAM PAGE LOADED");
   }, []);
 
-  async function load() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    const { data: teamData } = await supabase
-      .from("teams")
-      .select("gk_card_id,p1,p2,p3,p4,p5")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!team) {
-      return (
-        <div style={{
-          color: "white",
-          textAlign: "center",
-          marginTop: "100px",
-          fontSize: "24px"
-        }}>
-          Loading team...
-        </div>
-      );
-    }
-
-
-    const ids = teamData
-      ? (Object.values(teamData).filter(Boolean) as string[])
-      : [];
-
-
-    const { data: cardData } = await supabase
-      .from("cards")
-      .select("id,overall,image_url")
-      .in("id", ids);
-
-    const map: any = {};
-    cardData?.forEach((c) => (map[c.id] = c));
-    setCards(map);
-  }
-
-  function Slot({ cardId, label }: { cardId?: string | null; label: string }) {
-    const c = cardId ? cards[cardId] : null;
-
-    return (
-      <div className="slot">
-        {c ? (
-          <>
-            <img src={c.image_url} />
-            <div className="rating">{c.overall}</div>
-          </>
-        ) : (
-          <div style={{ color: "white", marginTop: 40 }}>{label}</div>
-        )}
-      </div>
-    );
-  }
-
-  if (!team) return null;
-
   return (
-    <div className="pitch">
-      <div className="row top">
-        <Slot label="P3" cardId={team.p3} />
-        <Slot label="P4" cardId={team.p4} />
-        <Slot label="P5" cardId={team.p5} />
-      </div>
+    <div className="team-page">
+      <div className="pitch">
+        {/* horní řada */}
+        <div className="row">
+          <Slot label="P3" cardId={team.p3} />
+          <Slot label="P4" cardId={team.p4} />
+          <Slot label="P5" cardId={team.p5} />
+        </div>
 
-      <div className="row bottom">
-        <Slot label="P1" cardId={team.p1} />
-        <Slot label="P2" cardId={team.p2} />
-      </div>
+        {/* prostřední řada */}
+        <div className="row">
+          <Slot label="P1" cardId={team.p1} />
+          <Slot label="P2" cardId={team.p2} />
+        </div>
 
-      <div className="row gk">
-        <Slot label="GK" cardId={team.gk_card_id} />
+        {/* gólman */}
+        <div className="row gk">
+          <Slot label="GK" cardId={team.gk_card_id} />
+        </div>
       </div>
     </div>
   );
