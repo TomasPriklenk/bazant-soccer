@@ -1,4 +1,4 @@
-import AuthGuard from "@/components/AuthGuard";
+import AuthGuard from "../components/AuthGuard";
 import Link from "next/link";
 
 export default function GamePage() {
