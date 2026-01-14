@@ -2,97 +2,95 @@
 
 import { useState } from "react";
 
-/**
- * Slot = jedno místo na hřišti
- * zatím jen klik + label
- */
 type SlotKey = "gk" | "p1" | "p2" | "p3" | "p4" | "p5";
+
+type Card = {
+  id: string;
+  name: string;
+  overall: number;
+};
+
+const FAKE_CARDS: Card[] = [
+  { id: "c1", name: "Hráč A", overall: 10 },
+  { id: "c2", name: "Hráč B", overall: 10 },
+  { id: "c3", name: "Hráč C", overall: 11 },
+  { id: "c4", name: "Hráč D", overall: 9 },
+  { id: "c5", name: "Gólman", overall: 10 },
+];
 
 function Slot({
   label,
-  slotKey,
-  active,
+  card,
   onClick,
 }: {
   label: string;
-  slotKey: SlotKey;
-  active: boolean;
-  onClick: (slot: SlotKey) => void;
+  card: Card | null;
+  onClick: () => void;
 }) {
   return (
-    <div
-      className={`slot ${active ? "active" : ""}`}
-      onClick={() => onClick(slotKey)}
-    >
-      {label}
+    <div className="slot" onClick={onClick}>
+      {card ? `${card.name} (${card.overall})` : label}
     </div>
   );
 }
 
 export default function TeamPage() {
   const [activeSlot, setActiveSlot] = useState<SlotKey | null>(null);
+  const [team, setTeam] = useState<Record<SlotKey, Card | null>>({
+    gk: null,
+    p1: null,
+    p2: null,
+    p3: null,
+    p4: null,
+    p5: null,
+  });
 
-  function handleSlotClick(slot: SlotKey) {
-    console.log("Klik na slot:", slot);
-    setActiveSlot(slot);
+  function selectCard(card: Card) {
+    if (!activeSlot) return;
+
+    setTeam((prev) => ({
+      ...prev,
+      [activeSlot]: card,
+    }));
+
+    setActiveSlot(null);
   }
 
   return (
     <div className="team-page">
       <div className="pitch">
-        {/* horní řada */}
         <div className="row">
-          <Slot
-            label="P3"
-            slotKey="p3"
-            active={activeSlot === "p3"}
-            onClick={handleSlotClick}
-          />
-          <Slot
-            label="P4"
-            slotKey="p4"
-            active={activeSlot === "p4"}
-            onClick={handleSlotClick}
-          />
-          <Slot
-            label="P5"
-            slotKey="p5"
-            active={activeSlot === "p5"}
-            onClick={handleSlotClick}
-          />
+          <Slot label="P3" card={team.p3} onClick={() => setActiveSlot("p3")} />
+          <Slot label="P4" card={team.p4} onClick={() => setActiveSlot("p4")} />
+          <Slot label="P5" card={team.p5} onClick={() => setActiveSlot("p5")} />
         </div>
 
-        {/* prostřední řada */}
         <div className="row">
-          <Slot
-            label="P1"
-            slotKey="p1"
-            active={activeSlot === "p1"}
-            onClick={handleSlotClick}
-          />
-          <Slot
-            label="P2"
-            slotKey="p2"
-            active={activeSlot === "p2"}
-            onClick={handleSlotClick}
-          />
+          <Slot label="P1" card={team.p1} onClick={() => setActiveSlot("p1")} />
+          <Slot label="P2" card={team.p2} onClick={() => setActiveSlot("p2")} />
         </div>
 
-        {/* gólman */}
         <div className="row">
-          <Slot
-            label="GK"
-            slotKey="gk"
-            active={activeSlot === "gk"}
-            onClick={handleSlotClick}
-          />
+          <Slot label="GK" card={team.gk} onClick={() => setActiveSlot("gk")} />
         </div>
       </div>
 
-      {/* info */}
       {activeSlot && (
-        <div className="info">
-          Aktivní slot: <strong>{activeSlot.toUpperCase()}</strong>
+        <div className="card-picker">
+          <h3>Vyber kartu pro {activeSlot.toUpperCase()}</h3>
+
+          <div className="cards">
+            {FAKE_CARDS.map((card) => (
+              <div
+                key={card.id}
+                className="card"
+                onClick={() => selectCard(card)}
+              >
+                <strong>{card.name}</strong>
+                <div>Overall: {card.overall}</div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
