@@ -1,81 +1,57 @@
-"use client";
+import AuthGuard from "@/components/AuthGuard";
+import Link from "next/link";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-
-export default function GameMenuPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // kontrola přihlášení
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        // nepřihlášen → zpět na homepage / login
-        router.push("/");
-      } else {
-        setLoading(false);
-      }
-    });
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div style={styles.loading}>
-        Načítání…
-      </div>
-    );
-  }
-
+export default function GamePage() {
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Herní menu</h1>
+    <AuthGuard>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#000",
+          color: "white",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            background: "#111",
+            padding: 40,
+            borderRadius: 12,
+            textAlign: "center",
+            boxShadow: "0 0 20px rgba(0,255,0,0.2)",
+          }}
+        >
+          <h1 style={{ marginBottom: 30 }}>🎮 Game menu</h1>
 
-      <button style={styles.button} onClick={() => router.push("/team")}>
-        ⚽ Tým
-      </button>
+          <div style={{ display: "flex", gap: 20, justifyContent: "center" }}>
+            <Link href="/team">
+              <button
+                style={{
+                  padding: "12px 24px",
+                  fontSize: 16,
+                  cursor: "pointer",
+                }}
+              >
+                ⚽ Tým
+              </button>
+            </Link>
 
-      <button style={styles.button} onClick={() => router.push("/obchod")}>
-        🛒 Obchod
-      </button>
-    </div>
+            <Link href="/obchod">
+              <button
+                style={{
+                  padding: "12px 24px",
+                  fontSize: 16,
+                  cursor: "pointer",
+                }}
+              >
+                🛒 Obchod
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </AuthGuard>
   );
 }
-
-/* ===== STYLY ===== */
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: "100vh",
-    background: "#000",
-    color: "#fff",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "20px",
-  },
-  title: {
-    fontSize: "32px",
-    marginBottom: "20px",
-  },
-  button: {
-    width: "240px",
-    padding: "16px",
-    fontSize: "18px",
-    borderRadius: "12px",
-    border: "2px solid #00ff66",
-    background: "#0a3d1c",
-    color: "#00ff66",
-    cursor: "pointer",
-  },
-  loading: {
-    minHeight: "100vh",
-    background: "#000",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-};
