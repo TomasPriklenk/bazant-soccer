@@ -1,6 +1,4 @@
-"use client";
-
-import AuthGuard from "../components/AuthGuard";
+import AuthGuard from "@/app/components/AuthGuard";
 import Link from "next/link";
 
 export default function GamePage() {
@@ -9,14 +7,10 @@ export default function GamePage() {
       <div style={{ color: "white", padding: 40 }}>
         <h1>Game menu</h1>
 
-        <ul>
-          <li>
-            <Link href="/team">➡️ Tým</Link>
-          </li>
-          <li>
-            <Link href="/obchod">🛒 Obchod</Link>
-          </li>
-        </ul>
+        <div style={{ display: "flex", gap: 20, marginTop: 20 }}>
+          <Link href="/team">👉 Tým</Link>
+          <Link href="/obchod">🛒 Obchod</Link>
+        </div>
       </div>
     </AuthGuard>
   );
