@@ -39,8 +39,19 @@ export default function TeamPage() {
       .eq("user_id", user.id)
       .single();
 
-    if (!teamData) return;
-    setTeam(teamData);
+    if (!team) {
+      return (
+        <div style={{
+          color: "white",
+          textAlign: "center",
+          marginTop: "100px",
+          fontSize: "24px"
+        }}>
+          Loading team...
+        </div>
+      );
+    }
+
 
     const ids = teamData
       ? (Object.values(teamData).filter(Boolean) as string[])
