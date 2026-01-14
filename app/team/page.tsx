@@ -1,71 +1,100 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 /**
  * Slot = jedno místo na hřišti
- * Zatím jen zobrazí cardId nebo label
+ * zatím jen klik + label
  */
+type SlotKey = "gk" | "p1" | "p2" | "p3" | "p4" | "p5";
+
 function Slot({
   label,
-  cardId,
+  slotKey,
+  active,
+  onClick,
 }: {
   label: string;
-  cardId?: string | null;
+  slotKey: SlotKey;
+  active: boolean;
+  onClick: (slot: SlotKey) => void;
 }) {
   return (
-    <div className="slot">
-      {cardId ?? label}
+    <div
+      className={`slot ${active ? "active" : ""}`}
+      onClick={() => onClick(slotKey)}
+    >
+      {label}
     </div>
   );
 }
 
-type Team = {
-  gk_card_id: string | null;
-  p1: string | null;
-  p2: string | null;
-  p3: string | null;
-  p4: string | null;
-  p5: string | null;
-};
-
 export default function TeamPage() {
-  // 🔹 zatím mock dat (později nahradíme Supabase)
-  const [team, setTeam] = useState<Team>({
-    gk_card_id: null,
-    p1: null,
-    p2: null,
-    p3: null,
-    p4: null,
-    p5: null,
-  });
+  const [activeSlot, setActiveSlot] = useState<SlotKey | null>(null);
 
-  useEffect(() => {
-    // jen test, že stránka renderuje
-    console.log("TEAM PAGE LOADED");
-  }, []);
+  function handleSlotClick(slot: SlotKey) {
+    console.log("Klik na slot:", slot);
+    setActiveSlot(slot);
+  }
 
   return (
     <div className="team-page">
       <div className="pitch">
         {/* horní řada */}
         <div className="row">
-          <Slot label="P3" cardId={team.p3} />
-          <Slot label="P4" cardId={team.p4} />
-          <Slot label="P5" cardId={team.p5} />
+          <Slot
+            label="P3"
+            slotKey="p3"
+            active={activeSlot === "p3"}
+            onClick={handleSlotClick}
+          />
+          <Slot
+            label="P4"
+            slotKey="p4"
+            active={activeSlot === "p4"}
+            onClick={handleSlotClick}
+          />
+          <Slot
+            label="P5"
+            slotKey="p5"
+            active={activeSlot === "p5"}
+            onClick={handleSlotClick}
+          />
         </div>
 
         {/* prostřední řada */}
         <div className="row">
-          <Slot label="P1" cardId={team.p1} />
-          <Slot label="P2" cardId={team.p2} />
+          <Slot
+            label="P1"
+            slotKey="p1"
+            active={activeSlot === "p1"}
+            onClick={handleSlotClick}
+          />
+          <Slot
+            label="P2"
+            slotKey="p2"
+            active={activeSlot === "p2"}
+            onClick={handleSlotClick}
+          />
         </div>
 
         {/* gólman */}
-        <div className="row gk">
-          <Slot label="GK" cardId={team.gk_card_id} />
+        <div className="row">
+          <Slot
+            label="GK"
+            slotKey="gk"
+            active={activeSlot === "gk"}
+            onClick={handleSlotClick}
+          />
         </div>
       </div>
+
+      {/* info */}
+      {activeSlot && (
+        <div className="info">
+          Aktivní slot: <strong>{activeSlot.toUpperCase()}</strong>
+        </div>
+      )}
     </div>
   );
 }
