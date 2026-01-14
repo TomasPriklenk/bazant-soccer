@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 /* =========================
    Typy
@@ -25,7 +26,7 @@ type Team = {
 type SlotKey = keyof Team;
 
 /* =========================
-   Slot komponenta
+   Slot
 ========================= */
 
 function Slot({
@@ -56,7 +57,6 @@ function Slot({
 ========================= */
 
 export default function TeamPage() {
-  /* ===== Team state ===== */
   const [team, setTeam] = useState<Team>({
     gk_card_id: null,
     p1: null,
@@ -66,20 +66,28 @@ export default function TeamPage() {
     p5: null,
   });
 
-  /* ===== Active slot ===== */
+  const [cards, setCards] = useState<Card[]>([]);
   const [activeSlot, setActiveSlot] = useState<SlotKey | null>(null);
 
-  /* ===== Karty (zatím fake, později Supabase) ===== */
-  const [cards, setCards] = useState<Card[]>([]);
+  /* =========================
+     Načtení karet ze Supabase
+  ========================= */
 
   useEffect(() => {
-    setCards([
-      { id: "a", name: "Hráč A", overall: 10, is_goalkeeper: false },
-      { id: "b", name: "Hráč B", overall: 10, is_goalkeeper: false },
-      { id: "c", name: "Hráč C", overall: 11, is_goalkeeper: false },
-      { id: "d", name: "Hráč D", overall: 9, is_goalkeeper: false },
-      { id: "gk", name: "Gólman", overall: 10, is_goalkeeper: true },
-    ]);
+    async function loadCards() {
+      const { data, error } = await supabase
+        .from("cards")
+        .select("id, name, overall, is_goalkeeper");
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setCards(data ?? []);
+    }
+
+    loadCards();
   }, []);
 
   /* =========================
@@ -89,7 +97,7 @@ export default function TeamPage() {
   const usedCardIds = Object.values(team).filter(Boolean);
 
   const selectableCards = cards.filter((card) => {
-    // ❌ nesmí být použitý 2×
+    // ❌ stejný hráč 2×
     if (usedCardIds.includes(card.id)) return false;
 
     // 🧤 GK pravidlo
@@ -134,13 +142,17 @@ export default function TeamPage() {
         </div>
 
         <div className="row gk">
-          <Slot label="GK" card={getCard(team.gk_card_id)} onClick={() => setActiveSlot("gk_card_id")} />
+          <Slot
+            label="GK"
+            card={getCard(team.gk_card_id)}
+            onClick={() => setActiveSlot("gk_card_id")}
+          />
         </div>
       </div>
 
       {activeSlot && (
         <div className="card-picker">
-          <h3>Vyber kartu pro {activeSlot.toUpperCase()}</h3>
+          <h3>Vyber kartu</h3>
 
           {selectableCards.map((card) => (
             <div
