@@ -19,7 +19,7 @@ export default function AuthGuard({
       } = await supabase.auth.getSession();
 
       // ❗ správně: KDYŽ NENÍ session → pryč
-      if (!session) {
+      if (session) {
         router.replace("/");
       } else {
         setLoading(false);
