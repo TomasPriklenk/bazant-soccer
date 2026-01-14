@@ -1,3 +1,14 @@
+export default function TeamPage() {
+  return (
+    <div style={{ color: "white", fontSize: 32, padding: 40 }}>
+      TEAM PAGE RENDER TEST
+    </div>
+  );
+}
+
+
+
+
 "use client";
 
 import { useEffect, useState } from "react";
