@@ -1,22 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-type SlotKey = "gk" | "p1" | "p2" | "p3" | "p4" | "p5";
+/* =========================
+   Typy
+========================= */
 
 type Card = {
   id: string;
   name: string;
   overall: number;
+  is_goalkeeper: boolean;
 };
 
-const FAKE_CARDS: Card[] = [
-  { id: "c1", name: "Hráč A", overall: 10 },
-  { id: "c2", name: "Hráč B", overall: 10 },
-  { id: "c3", name: "Hráč C", overall: 11 },
-  { id: "c4", name: "Hráč D", overall: 9 },
-  { id: "c5", name: "Gólman", overall: 10 },
-];
+type Team = {
+  gk_card_id: string | null;
+  p1: string | null;
+  p2: string | null;
+  p3: string | null;
+  p4: string | null;
+  p5: string | null;
+};
+
+type SlotKey = keyof Team;
+
+/* =========================
+   Slot komponenta
+========================= */
 
 function Slot({
   label,
@@ -24,20 +34,31 @@ function Slot({
   onClick,
 }: {
   label: string;
-  card: Card | null;
+  card?: Card;
   onClick: () => void;
 }) {
   return (
     <div className="slot" onClick={onClick}>
-      {card ? `${card.name} (${card.overall})` : label}
+      {card ? (
+        <>
+          <div>{card.name}</div>
+          <div>({card.overall})</div>
+        </>
+      ) : (
+        label
+      )}
     </div>
   );
 }
 
+/* =========================
+   Page
+========================= */
+
 export default function TeamPage() {
-  const [activeSlot, setActiveSlot] = useState<SlotKey | null>(null);
-  const [team, setTeam] = useState<Record<SlotKey, Card | null>>({
-    gk: null,
+  /* ===== Team state ===== */
+  const [team, setTeam] = useState<Team>({
+    gk_card_id: null,
     p1: null,
     p2: null,
     p3: null,
@@ -45,33 +66,75 @@ export default function TeamPage() {
     p5: null,
   });
 
-  function selectCard(card: Card) {
+  /* ===== Active slot ===== */
+  const [activeSlot, setActiveSlot] = useState<SlotKey | null>(null);
+
+  /* ===== Karty (zatím fake, později Supabase) ===== */
+  const [cards, setCards] = useState<Card[]>([]);
+
+  useEffect(() => {
+    setCards([
+      { id: "a", name: "Hráč A", overall: 10, is_goalkeeper: false },
+      { id: "b", name: "Hráč B", overall: 10, is_goalkeeper: false },
+      { id: "c", name: "Hráč C", overall: 11, is_goalkeeper: false },
+      { id: "d", name: "Hráč D", overall: 9, is_goalkeeper: false },
+      { id: "gk", name: "Gólman", overall: 10, is_goalkeeper: true },
+    ]);
+  }, []);
+
+  /* =========================
+     Pravidla výběru
+  ========================= */
+
+  const usedCardIds = Object.values(team).filter(Boolean);
+
+  const selectableCards = cards.filter((card) => {
+    // ❌ nesmí být použitý 2×
+    if (usedCardIds.includes(card.id)) return false;
+
+    // 🧤 GK pravidlo
+    if (activeSlot === "gk_card_id") {
+      return card.is_goalkeeper;
+    }
+
+    return !card.is_goalkeeper;
+  });
+
+  function selectCard(cardId: string) {
     if (!activeSlot) return;
 
     setTeam((prev) => ({
       ...prev,
-      [activeSlot]: card,
+      [activeSlot]: cardId,
     }));
 
     setActiveSlot(null);
   }
 
+  function getCard(cardId: string | null) {
+    return cards.find((c) => c.id === cardId);
+  }
+
+  /* =========================
+     Render
+  ========================= */
+
   return (
     <div className="team-page">
       <div className="pitch">
-        <div className="row">
-          <Slot label="P3" card={team.p3} onClick={() => setActiveSlot("p3")} />
-          <Slot label="P4" card={team.p4} onClick={() => setActiveSlot("p4")} />
-          <Slot label="P5" card={team.p5} onClick={() => setActiveSlot("p5")} />
+        <div className="row top">
+          <Slot label="P3" card={getCard(team.p3)} onClick={() => setActiveSlot("p3")} />
+          <Slot label="P4" card={getCard(team.p4)} onClick={() => setActiveSlot("p4")} />
+          <Slot label="P5" card={getCard(team.p5)} onClick={() => setActiveSlot("p5")} />
         </div>
 
-        <div className="row">
-          <Slot label="P1" card={team.p1} onClick={() => setActiveSlot("p1")} />
-          <Slot label="P2" card={team.p2} onClick={() => setActiveSlot("p2")} />
+        <div className="row mid">
+          <Slot label="P1" card={getCard(team.p1)} onClick={() => setActiveSlot("p1")} />
+          <Slot label="P2" card={getCard(team.p2)} onClick={() => setActiveSlot("p2")} />
         </div>
 
-        <div className="row">
-          <Slot label="GK" card={team.gk} onClick={() => setActiveSlot("gk")} />
+        <div className="row gk">
+          <Slot label="GK" card={getCard(team.gk_card_id)} onClick={() => setActiveSlot("gk_card_id")} />
         </div>
       </div>
 
@@ -79,18 +142,16 @@ export default function TeamPage() {
         <div className="card-picker">
           <h3>Vyber kartu pro {activeSlot.toUpperCase()}</h3>
 
-          <div className="cards">
-            {FAKE_CARDS.map((card) => (
-              <div
-                key={card.id}
-                className="card"
-                onClick={() => selectCard(card)}
-              >
-                <strong>{card.name}</strong>
-                <div>Overall: {card.overall}</div>
-              </div>
-            ))}
-          </div>
+          {selectableCards.map((card) => (
+            <div
+              key={card.id}
+              className="card-option"
+              onClick={() => selectCard(card.id)}
+            >
+              {card.name} – Overall {card.overall}
+              {card.is_goalkeeper && " (GK)"}
+            </div>
+          ))}
         </div>
       )}
     </div>
