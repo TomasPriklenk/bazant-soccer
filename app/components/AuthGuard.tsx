@@ -18,6 +18,7 @@ export default function AuthGuard({
         data: { session },
       } = await supabase.auth.getSession();
 
+      // ❗ správně: KDYŽ NENÍ session → pryč
       if (!session) {
         router.replace("/");
       } else {
@@ -35,11 +36,13 @@ export default function AuthGuard({
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   if (loading) {
-    return <div style={{ color: "white", padding: 40 }}>Načítám…</div>;
+    return <div style={{ color: "white" }}>Načítám…</div>;
   }
 
   return <>{children}</>;
