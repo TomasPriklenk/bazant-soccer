@@ -10,36 +10,23 @@ export default function AuthGuard({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const check = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const checkUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
 
-      // ❗ TADY JE KLÍČ
-      if (!session) {
+      if (error || !data.user) {
         router.replace("/");
       } else {
-        setLoading(false);
+        setReady(true);
       }
     };
 
-    check();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.replace("/");
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    checkUser();
   }, [router]);
 
-  if (loading) {
+  if (!ready) {
     return <div style={{ color: "white" }}>Načítám…</div>;
   }
 
